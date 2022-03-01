@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 public class playerMovements : MonoBehaviour
 {
     public Rigidbody rb;
+    public Joystick joystick; 
 
     public float forwardForce = 6000f;
     public float sidewaysForce = 200f;
@@ -20,6 +21,8 @@ public class playerMovements : MonoBehaviour
     public bool checkJump;
     public Vector3 jumpVector;
     public float jumpForce = 0.2f;
+
+    private float horizontalMove = 0f;
 
     public bool isGrounded;
 
@@ -91,6 +94,7 @@ public class playerMovements : MonoBehaviour
                 checkJump = true;
             }
 
+
             if (Input.GetKey(KeyCode.W) && !isGrounded && dashCounter > 0 && !isDashing && Time.time >= nextDashTime)
             {
                 isDashing = true;
@@ -105,6 +109,7 @@ public class playerMovements : MonoBehaviour
 
                 nextGPTime = Time.time + groundPoundCoolDownTime;
             }
+
 
             if (Input.GetKey(KeyCode.LeftShift) && !isGroundPounding && !isDashing && Time.time >= nextSJTime)
             {
@@ -128,17 +133,20 @@ public class playerMovements : MonoBehaviour
     private void movePlayer()
     {
         // detects player inputs
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            rb.AddForce(sidewaysForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
-            currentPresses += 1;
-        }
+        // if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        // {
+        //     rb.AddForce(sidewaysForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
+        //     currentPresses += 1;
+        // }
         
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            rb.AddForce(-sidewaysForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
-            currentPresses += 1;
-        }
+        // if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        // {
+        //     rb.AddForce(-sidewaysForce * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
+        //     currentPresses += 1;
+        // }
+
+        rb.AddForce((sidewaysForce/4) * joystick.Horizontal * Time.deltaTime, 0, 0, ForceMode.VelocityChange);
+        currentPresses += 1;
 
         // superjump rigidbody code
         if (isSuperJumping)

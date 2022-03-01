@@ -27,6 +27,11 @@ public class buttonManager : MonoBehaviour
 
     public TMP_Dropdown qualityDropdown;
 
+    private Vector2 fingerDownPosition;
+    private Vector2 fingerUpPosition;
+    private float minDistanceForSwipe;
+    private bool detectSwipeOnlyAfterRelease;
+
     private void Awake()
     {
         isInGame = false;
@@ -48,7 +53,47 @@ public class buttonManager : MonoBehaviour
     private void Update()
     {
         checkNavigationKeys();
+
+        foreach (Touch touch in Input.touches)
+        {
+            if (touch.phase == TouchPhase.Began)
+            {
+                fingerUpPosition = touch.position;
+                fingerDownPosition = touch.position;
+            }
+
+            if (!detectSwipeOnlyAfterRelease && touch.phase == TouchPhase.Moved)
+            {
+                fingerDownPosition = touch.position;
+                DetectSwipe();
+            }
+
+            if (touch.phase == TouchPhase.Ended)
+            {
+                fingerDownPosition = touch.position;
+                DetectSwipe();
+            }
+        }
     }
+
+
+    public void DetectSwipe() {
+        if (SwipeDistanceCheckMet())
+        {
+            if (IsVerticalSwipe())
+            {
+                var direction = fingerDownPosition.y - fingerUpPosition.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
+                Debug.Log(direction);
+            }
+            else
+            {
+                var direction = fingerDownPosition.x - fingerUpPosition.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+                Debug.Log(direction);
+            }
+            fingerUpPosition = fingerDownPosition;
+        }
+    }
+    
 
     private void checkNavigationKeys()
     {
@@ -90,31 +135,31 @@ public class buttonManager : MonoBehaviour
             }
 
             // for the loading of other 'areas', based on the current array count number
-            if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.KeypadEnter))
-            {
-                if (arrayCurrentNumber == 0)
-                {
-                    isInGame = true;
-                    envLoaderScript.beginGame();
-                }
+            // if (Input.touchCount > 0)
+            // {
+            //     if (arrayCurrentNumber == 0)
+            //     {
+            //         isInGame = true;
+            //         envLoaderScript.beginGame();
+            //     }
 
-                if (arrayCurrentNumber == 1)
-                {
-                    isInGame = false;
-                    envLoaderScript.showSettings();
-                }
+            //     if (arrayCurrentNumber == 1)
+            //     {
+            //         isInGame = false;
+            //         envLoaderScript.showSettings();
+            //     }
 
-                if (arrayCurrentNumber == 2)
-                {
-                    isInGame = false;
-                    envLoaderScript.showCredits();
-                }
+            //     if (arrayCurrentNumber == 2)
+            //     {
+            //         isInGame = false;
+            //         envLoaderScript.showCredits();
+            //     }
 
-                if (arrayCurrentNumber == 3)
-                {
-                    quitGame();
-                }
-            }
+            //     if (arrayCurrentNumber == 3)
+            //     {
+            //         quitGame();
+            //     }
+            // }
         }
 
         if (isInSettings)
@@ -197,4 +242,35 @@ public class buttonManager : MonoBehaviour
     {
         Application.Quit();
     }
+
+    
+    private bool IsVerticalSwipe()
+    {
+        return VerticalMovementDistance() > HorizontalMovementDistance();
+    }
+
+    private bool SwipeDistanceCheckMet()
+    {
+        return VerticalMovementDistance() > minDistanceForSwipe || HorizontalMovementDistance() > minDistanceForSwipe;
+    }
+
+    private float VerticalMovementDistance()
+    {
+        return Mathf.Abs(fingerDownPosition.y - fingerUpPosition.y);
+    }
+
+    private float HorizontalMovementDistance()
+    {
+        return Mathf.Abs(fingerDownPosition.x - fingerUpPosition.x);
+    }
+
+
+    public enum SwipeDirection
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
 }
