@@ -29,6 +29,7 @@ public class buttonManager : MonoBehaviour
 
     private Vector2 fingerDownPosition;
     private Vector2 fingerUpPosition;
+    private Vector2 startFingerPosition;
     private float minDistanceForSwipe;
     private bool detectSwipeOnlyAfterRelease;
 
@@ -52,45 +53,103 @@ public class buttonManager : MonoBehaviour
 
     private void Update()
     {
-        checkNavigationKeys();
+        // checkNavigationKeys();
 
         foreach (Touch touch in Input.touches)
         {
             if (touch.phase == TouchPhase.Began)
             {
+                startFingerPosition = touch.position;
                 fingerUpPosition = touch.position;
                 fingerDownPosition = touch.position;
             }
 
-            if (!detectSwipeOnlyAfterRelease && touch.phase == TouchPhase.Moved)
+            if (touch.phase == TouchPhase.Ended && startFingerPosition == touch.position)
+            {
+                if (arrayCurrentNumber == 0)
+                {
+                    isInGame = true;
+                    envLoaderScript.beginGame();
+                }
+
+                if (arrayCurrentNumber == 1)
+                {
+                    isInGame = false;
+                    envLoaderScript.showSettings();
+                }
+
+                if (arrayCurrentNumber == 2)
+                {
+                    isInGame = false;
+                    envLoaderScript.showCredits();
+                }
+
+                if (arrayCurrentNumber == 3)
+                {
+                    quitGame();
+                }
+            }
+
+            // if(!detectSwipeOnlyAfterRelease && touch.phase == TouchPhase.Moved)
+            // {
+            //     fingerDownPosition = touch.position;
+            //     DetectSwipe();
+            // }
+            
+            if(touch.phase == TouchPhase.Ended)
             {
                 fingerDownPosition = touch.position;
                 DetectSwipe();
             }
 
-            if (touch.phase == TouchPhase.Ended)
-            {
-                fingerDownPosition = touch.position;
-                DetectSwipe();
-            }
+
         }
     }
 
 
     public void DetectSwipe() {
+        Debug.Log("Swipe has been detected");
         if (SwipeDistanceCheckMet())
         {
-            if (IsVerticalSwipe())
-            {
+            // if (IsVerticalSwipe())
+            // {
                 var direction = fingerDownPosition.y - fingerUpPosition.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
-                Debug.Log(direction);
+                //Debug.Log(direction);
+                Debug.Log(fingerDownPosition);
+                Debug.Log(fingerUpPosition);
+                
+                // have to minus 1, since the array stuff starts at 0 and not 1, took me a long time to figure out cos im stupid lmao
+                if (arrayCurrentNumber != selectionAnimatorTriggersInOrder.Length - 1 && direction == SwipeDirection.Down)
+                {
+                    // must reset trigger, or it'll spasm out n stuff lol
+                    Debug.Log("If function");
+
+                    selectorAnimator.ResetTrigger(selectionAnimatorTriggersInOrder[arrayCurrentNumber]);
+
+                    arrayCurrentNumber += 1;
+
+                    updateSelection();
+                }
+                
+                if (arrayCurrentNumber != 0 && direction == SwipeDirection.Up)
+                {
+                    // see above
+                    Debug.Log("If function");
+                    
+                    selectorAnimator.ResetTrigger(selectionAnimatorTriggersInOrder[arrayCurrentNumber]);
+
+                    arrayCurrentNumber -= 1;
+
+                    updateSelection();
+                //  }
             }
-            else
-            {
-                var direction = fingerDownPosition.x - fingerUpPosition.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
-                Debug.Log(direction);
-            }
-            fingerUpPosition = fingerDownPosition;
+            // else
+            // {
+            //     var direction = fingerDownPosition.x - fingerUpPosition.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+            //     Debug.Log(direction);
+
+            //     fingerUpPosition = fingerDownPosition;
+            // }
         }
     }
     
@@ -134,33 +193,8 @@ public class buttonManager : MonoBehaviour
                 envLoaderScript.showHelpScreen();
             }
 
-            // for the loading of other 'areas', based on the current array count number
-            // if (Input.touchCount > 0)
-            // {
-            //     if (arrayCurrentNumber == 0)
-            //     {
-            //         isInGame = true;
-            //         envLoaderScript.beginGame();
-            //     }
-
-            //     if (arrayCurrentNumber == 1)
-            //     {
-            //         isInGame = false;
-            //         envLoaderScript.showSettings();
-            //     }
-
-            //     if (arrayCurrentNumber == 2)
-            //     {
-            //         isInGame = false;
-            //         envLoaderScript.showCredits();
-            //     }
-
-            //     if (arrayCurrentNumber == 3)
-            //     {
-            //         quitGame();
-            //     }
-            // }
         }
+    
 
         if (isInSettings)
         {
