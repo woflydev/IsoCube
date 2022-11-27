@@ -1,3 +1,5 @@
+# Source code made public for archive. Based on Brackeys' beginners' Unity tutorial.
+
 # IsoCube
 IsoCube's private online file repository.
 
